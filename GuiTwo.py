@@ -3,6 +3,7 @@
 # such as addition, subtraction, multiplication, and division.
 
 import tkinter as tk
+from tkinter import ttk
 
 
 # Function to update the expression in the entry box
@@ -24,36 +25,101 @@ def clear_expression():
     expression.set("")
 
 
+# Function to clear the last entry (similar to CE)
+def clear_last_entry():
+    expression.set(expression.get()[:-1])
+
+
+# Function to close the application
+def close_app():
+    root.destroy()
+
+
 # Create the main window
 root = tk.Tk()
-root.title("Basic Calculator")
+root.overrideredirect(True)  # Hide the title bar
+root.configure(bg='#1E1E1E', bd=2, relief='solid')  # Add border to the form
+
+# Create a custom header frame
+header_frame = tk.Frame(root, bg='#1E1E1E')
+header_frame.grid(row=0, column=0, columnspan=4, sticky='nsew')
+
+# Add title to the header frame
+title_label = tk.Label(header_frame, text="Calculator", bg='#1E1E1E', fg='white', font=("Arial", 14))
+title_label.pack(side=tk.LEFT, padx=10, pady=5)
+
+# Add close button to the header frame
+close_button = tk.Button(header_frame, text="X", command=close_app, bg='#1E1E1E', fg='white', font=("Arial", 14),
+                         relief='flat', bd=0)
+close_button.pack(side=tk.RIGHT, padx=10, pady=5)
+
+# Set the style for ttk widgets
+style = ttk.Style(root)
+style.theme_use('clam')
 
 # Create a StringVar to hold the expression
 expression = tk.StringVar()
 
+# Custom style for the Entry widget
+style.configure('TEntry', fieldbackground='#1E1E1E', foreground='white', borderwidth=0, relief='flat')
+
 # Create an entry box to display the expression
-entry = tk.Entry(root, textvariable=expression, font=("Arial", 20), bd=10, insertwidth=2, width=14, borderwidth=4)
-entry.grid(row=0, column=0, columnspan=4)
+entry = ttk.Entry(root, textvariable=expression, font=("Arial", 20), justify='right', style='TEntry')
+entry.grid(row=1, column=0, columnspan=4, pady=10, padx=10, sticky='nsew')
+
+# Button colors
+button_bg = '#333333'
+button_fg = '#FFFFFF'
+operator_bg = '#444444'
+operator_fg = '#FFFFFF'
+equal_bg = '#C5A14B'
+equal_fg = '#000000'
 
 # Create buttons for the calculator
 buttons = [
-    ('7', 1, 0), ('8', 1, 1), ('9', 1, 2), ('/', 1, 3),
-    ('4', 2, 0), ('5', 2, 1), ('6', 2, 2), ('*', 2, 3),
-    ('1', 3, 0), ('2', 3, 1), ('3', 3, 2), ('-', 3, 3),
-    ('0', 4, 0), ('.', 4, 1), ('+', 4, 2), ('=', 4, 3),
-    ('C', 5, 0)
+    ('%', 2, 0, button_bg, button_fg), ('CE', 2, 1, button_bg, button_fg), ('C', 2, 2, button_bg, button_fg),
+    ('/', 2, 3, operator_bg, operator_fg),
+    ('7', 3, 0, button_bg, button_fg), ('8', 3, 1, button_bg, button_fg), ('9', 3, 2, button_bg, button_fg),
+    ('*', 3, 3, operator_bg, operator_fg),
+    ('4', 4, 0, button_bg, button_fg), ('5', 4, 1, button_bg, button_fg), ('6', 4, 2, button_bg, button_fg),
+    ('-', 4, 3, operator_bg, operator_fg),
+    ('1', 5, 0, button_bg, button_fg), ('2', 5, 1, button_bg, button_fg), ('3', 5, 2, button_bg, button_fg),
+    ('+', 5, 3, operator_bg, operator_fg),
+    ('+/-', 6, 0, button_bg, button_fg), ('0', 6, 1, button_bg, button_fg), ('.', 6, 2, button_bg, button_fg),
+    ('=', 6, 3, equal_bg, equal_fg)
 ]
 
 # Add buttons to the window
-for (text, row, col) in buttons:
+for (text, row, col, bg, fg) in buttons:
+    button = tk.Button(root, text=text, command=(
+        evaluate_expression if text == '=' else clear_expression if text == 'C' else clear_last_entry if text == 'CE' else lambda
+            t=text: update_expression(t)), bg=bg, fg=fg, font=("Arial", 18), relief='flat', bd=0)
     if text == '=':
-        button = tk.Button(root, text=text, padx=20, pady=20, font=("Arial", 18), command=evaluate_expression)
-    elif text == 'C':
-        button = tk.Button(root, text=text, padx=20, pady=20, font=("Arial", 18), command=clear_expression)
+        button.grid(row=row, column=col, padx=5, pady=5, ipadx=10, ipady=10, sticky="nsew", rowspan=2)
     else:
-        button = tk.Button(root, text=text, padx=20, pady=20, font=("Arial", 18),
-                           command=lambda t=text: update_expression(t))
-    button.grid(row=row, column=col)
+        button.grid(row=row, column=col, padx=5, pady=5, ipadx=10, ipady=10, sticky="nsew")
+
+# Configure grid weights for responsive layout
+for i in range(5):
+    root.grid_rowconfigure(i, weight=1)
+for j in range(4):
+    root.grid_columnconfigure(j, weight=1)
+
+
+# Allow window dragging
+def start_move(event):
+    root.x = event.x
+    root.y = event.y
+
+
+def do_move(event):
+    x = (event.x_root - root.x)
+    y = (event.y_root - root.y)
+    root.geometry(f"+{x}+{y}")
+
+
+header_frame.bind("<ButtonPress-1>", start_move)
+header_frame.bind("<B1-Motion>", do_move)
 
 # Run the application
 root.mainloop()
