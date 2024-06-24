@@ -40,6 +40,19 @@ root = tk.Tk()
 root.overrideredirect(True)  # Hide the title bar
 root.configure(bg='#1E1E1E', bd=2, relief='solid')  # Add border to the form
 
+
+# Function to center the window on the screen
+def center_window(window):
+    window.update_idletasks()
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    window_width = window.winfo_width()
+    window_height = window.winfo_height()
+    x = (screen_width // 2) - (window_width // 2)
+    y = (screen_height // 2) - (window_height // 2)
+    window.geometry(f'{window_width}x{window_height}+{x}+{y}')
+
+
 # Create a custom header frame
 header_frame = tk.Frame(root, bg='#1E1E1E')
 header_frame.grid(row=0, column=0, columnspan=4, sticky='nsew')
@@ -120,6 +133,10 @@ def do_move(event):
 
 header_frame.bind("<ButtonPress-1>", start_move)
 header_frame.bind("<B1-Motion>", do_move)
+
+# Center the window
+root.update_idletasks()
+center_window(root)
 
 # Run the application
 root.mainloop()
